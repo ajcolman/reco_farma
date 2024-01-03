@@ -1,0 +1,70 @@
+{% extends 'v_master.html' %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Bienvenido, {{ session['person'] }}</h4>
+                    <p class="card-text">Que desea hacer:</p>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <a href="{{ url_for('usuarios.users' ) }}" style="text-decoration:none;">
+                            <div class="d-grid gap-2">
+                                <button type="button" name="" id="" class="btn btn-primary">
+                                    Usuarios
+                                </button>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="" style="text-decoration:none;">
+                            <div class="d-grid gap-2">
+                                <button type="button" name="" id="" class="btn btn-primary">
+                                    Personas
+                                </button>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="" style="text-decoration:none;">
+                            <div class="d-grid gap-2">
+                                <button type="button" name="" id="" class="btn btn-primary">
+                                    Consulta Médica
+                                </button>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="" style="text-decoration:none;">
+                            <div class="d-grid gap-2">
+                                <button type="button" name="" id="" class="btn btn-primary">
+                                    Entrenamiento de Modelo de IA
+                                </button>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="" style="text-decoration:none;">
+                            <div class="d-grid gap-2">
+                                <button type="button" name="" id="" class="btn btn-primary">
+                                    Verificación de Prescripciones Médicas
+                                </button>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="" style="text-decoration:none;">
+                            <div class="d-grid gap-2">
+                                <button type="button" name="" id="" class="btn btn-primary">
+                                    Cambio de Contraseña
+                                </button>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+        </div>
+    </div>
+{% endblock %}
