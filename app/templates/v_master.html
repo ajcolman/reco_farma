@@ -101,6 +101,24 @@
                 }
             });
         }
+        function generarMensajeAlerta(mensajes, llamarFuncion = false) {
+                $.confirm({
+                    title: 'Alerta',
+                    content: mensajes['alerta'],
+                    type: 'orange',
+                    buttons: {
+                        aceptar: {
+                            text: 'Aceptar',
+                            btnClass: 'btn btn-success',
+                            action: function () {
+                                if (llamarFuncion != false) {
+                                    llamarFuncion();
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         function generarMensajeError(mensajes) {
             // Si hay errores de validación, muestra los mensajes de error
             if (mensajes.error.validacion) {

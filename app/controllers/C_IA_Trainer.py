@@ -8,6 +8,9 @@ from sklearn.model_selection import train_test_split
 from sklearn import preprocessing
 import dlib
 
+from app.forms.F_Trainer import F_Trainer
+from app.models.Models import People
+
 class CustomSVM:
     def __init__(self):
         self.model = svm.SVC(kernel='linear')
@@ -17,17 +20,22 @@ class CustomSVM:
         # Codificar etiquetas
         y_encoded = self.le.fit_transform(y)
 
-        # Dividir los datos en conjuntos de entrenamiento y prueba
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y_encoded, test_size=0.2, random_state=42)
+        # Si hay menos de dos muestras, no dividir los datos
+        if len(np.unique(y_encoded)) < 2:
+            print("Menos de dos clases, no se puede dividir el conjunto de datos.")
+            self.model.fit(X, y_encoded)
+        else:
+            # Dividir los datos en conjuntos de entrenamiento y prueba
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y_encoded, test_size=0.2, random_state=42)
 
-        # Entrenar el modelo
-        self.model.fit(X_train, y_train)
+            # Entrenar el modelo
+            self.model.fit(X_train, y_train)
 
-        # Evaluar el modelo
-        accuracy = self.model.score(X_test, y_test)
-        print(f'Accuracy: {accuracy}')
-
+            # Evaluar el modelo
+            accuracy = self.model.score(X_test, y_test)
+            print(f'Accuracy: {accuracy}')
+            
     def save_model(self, file_path):
         # Guardar el modelo y el codificador de etiquetas
         joblib.dump({'model': self.model, 'le': self.le}, file_path)
@@ -57,12 +65,16 @@ class C_IA_Trainer():
 
     @ia.route('/ia_trainer')
     def ia_trainer():
-        return render_template('v_ia_trainer.html', title="Entrenamiento de Modelo de IA")
+        form = F_Trainer()
+        return render_template('v_ia_trainer.html', title="Entrenamiento de Modelo de IA", form=form)
 
-    @ia.route('/train')
+    @ia.route('/train', methods=['POST'])
     def train():
+        message = {"correcto": '', "alerta": '', "error": ''}
         C_IA_Trainer.train_model()
-        return json.dumps('Modelo entrenado correctamente')
+        message['correcto'] = "Se ha entrenado correctamente, se ha generado un nuevo modelo de apredizaje con los nuevos datos que se recabaron"
+        return json.dumps(message)
+
 
     def train_model():
         # Obtener una lista de los directorios en el directorio `static/uploads`
@@ -103,10 +115,16 @@ class C_IA_Trainer():
         # Guardar el modelo entrenado
         custom_svm.save_model('model_weights.joblib')
 
-    @ia.route('/identify')
+    @ia.route('/identify', methods=['POST'])
     def identify():
+        message = {"correcto": '', "alerta": '', "error": ''}
         prediction = C_IA_Trainer.identify_person()
-        return str(prediction)
+        person_data = People.query.filter_by(peop_dni = prediction).first()
+        if person_data is not None:
+            message['correcto'] = "La persona identificada mediante la cámara es {}".format(person_data.peop_names+' '+person_data.peop_lastnames)
+        else:
+            message['alerta'] = prediction
+        return json.dumps(message)
 
     def identify_person():
         # Inicializar el detector de caras de dlib
@@ -127,7 +145,7 @@ class C_IA_Trainer():
         faces = face_detector(gray_webcam_img)
 
         if not faces:
-            return "No se detectaron caras en la webcam"
+            return "No se detectaron caras frente a la cámara"
 
         # Tomar la primera cara detectada (puedes ajustar esto según tus necesidades)
         face = faces[0]
