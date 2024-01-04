@@ -145,7 +145,7 @@ class C_People():
     def take_photo(dni):
         form = F_Fotos_Persona()
         person_data = People.query.with_entities(People.peop_dni.label('dni'), People.peop_names.label(
-            'names'), People.peop_lastnames.label('lastnames'), People.peop_birthdate.label('age')).filter_by(peop_dni=dni).first()
+            'names'), People.peop_lastnames.label('lastnames'), People.peop_birthdate.label('age'), People.peop_gender.label("gender")).filter_by(peop_dni=dni).first()
         return render_template('v_take_photo.html', title='Tomar Foto Persona', person_data=person_data, form=form, dni=dni)
 
     @peop.route('/register_person_photo/<dni>', methods=['POST'])

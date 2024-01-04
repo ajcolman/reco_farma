@@ -11,6 +11,7 @@
     <link href="{{ url_for('static', filename='bootstrap.min.css' ) }}" rel="stylesheet" />
     <link rel="stylesheet" type="text/css"
         href="{{ url_for('static', filename='node_modules/jquery-confirm/dist/jquery-confirm.min.css' ) }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.min.css' ) }}">
     <style>
         body {
             background-color: #e4ddd4;
@@ -74,6 +75,7 @@
     <script src="{{ url_for('static', filename='node_modules/jquery/dist/jquery.min.js' ) }}"></script>
     <script src="{{ url_for('static', filename='node_modules/jquery-confirm/dist/jquery-confirm.min.js' ) }}"></script>
     <script src="{{ url_for('static', filename='node_modules/axios/dist/axios.min.js' ) }}"></script>
+    <script src="{{ url_for('static', filename='fontawesome/js/all.min.js' ) }}"></script>
     <script>
         var csrfToken = document.querySelector("[name='csrf_token']").value;
         function axiosConfig() {

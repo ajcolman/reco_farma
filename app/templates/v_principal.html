@@ -1,70 +1,106 @@
 {% extends 'v_master.html' %}
 {% block content %}
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="card-title">Bienvenido, {{ session['person'] }}</h4>
-                    <p class="card-text">Que desea hacer:</p>
-                </div>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">Bienvenido, {{ session['person'] }}</h4>
+                <p class="card-text">Que desea hacer:</p>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('people.people' ) }}" style="text-decoration:none;">
+                            <div class="d-grid gap-2">
+                                <button type="button" name="" id="" class="btn btn-outline-primary">
+                                    <i class="fas fa-person fa-5x  "></i>
+                                    <p>Personas</p>
+                                </button>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
                         <a href="{{ url_for('usuarios.users' ) }}" style="text-decoration:none;">
                             <div class="d-grid gap-2">
-                                <button type="button" name="" id="" class="btn btn-primary">
-                                    Usuarios
+                                <button type="button" name="" id="" class="btn btn-outline-primary">
+                                    <i class="fa fa-users fa-5x" aria-hidden="true"></i>
+                                    <p>Usuarios</p>
                                 </button>
                             </div>
                         </a>
-                    </li>
-                    <li class="list-group-item">
-                        <a href="" style="text-decoration:none;">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('ia.ia_trainer' ) }}" style="text-decoration:none;">
                             <div class="d-grid gap-2">
-                                <button type="button" name="" id="" class="btn btn-primary">
-                                    Personas
+                                <button type="button" name="" id="" class="btn btn-outline-primary">
+                                    <i class="fa fa-robot fa-5x" aria-hidden="true"></i>
+                                    <p>Entrenamiento de IA</p>
                                 </button>
                             </div>
                         </a>
-                    </li>
-                    <li class="list-group-item">
-                        <a href="" style="text-decoration:none;">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('usuarios.users' ) }}" style="text-decoration:none;">
                             <div class="d-grid gap-2">
-                                <button type="button" name="" id="" class="btn btn-primary">
-                                    Consulta Médica
+                                <button type="button" name="" id="" class="btn btn-outline-primary"  disabled>
+                                    <i class="fa fa-stethoscope fa-5x" aria-hidden="true"></i>
+                                    <p>Consulta Médica</p>
                                 </button>
                             </div>
                         </a>
-                    </li>
-                    <li class="list-group-item">
-                        <a href="" style="text-decoration:none;">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('usuarios.users' ) }}" style="text-decoration:none;">
                             <div class="d-grid gap-2">
-                                <button type="button" name="" id="" class="btn btn-primary">
-                                    Entrenamiento de Modelo de IA
+                                <button type="button" name="" id="" class="btn btn-outline-primary" disabled>
+                                    <i class="fa fa-user-md fa-5x" aria-hidden="true"></i>
+                                    <p>Registro de Médicos</p>
                                 </button>
                             </div>
                         </a>
-                    </li>
-                    <li class="list-group-item">
-                        <a href="" style="text-decoration:none;">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('usuarios.users' ) }}" style="text-decoration:none;">
                             <div class="d-grid gap-2">
-                                <button type="button" name="" id="" class="btn btn-primary">
-                                    Verificación de Prescripciones Médicas
+                                <button type="button" name="" id="" class="btn btn-outline-primary"  disabled>
+                                    <i class="fa fa-prescription-bottle-alt fa-5x" aria-hidden="true"></i>
+                                    <p>Prescripciones Médicas</p>
                                 </button>
                             </div>
                         </a>
-                    </li>
-                    <li class="list-group-item">
-                        <a href="" style="text-decoration:none;">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('usuarios.users' ) }}" style="text-decoration:none;">
                             <div class="d-grid gap-2">
-                                <button type="button" name="" id="" class="btn btn-primary">
-                                    Cambio de Contraseña
+                                <button type="button" name="" id="" class="btn btn-outline-primary" disabled>
+                                    <i class="fa fa-lock fa-5x" aria-hidden="true"></i>
+                                    <p>Cambio de Contraseña</p>
                                 </button>
                             </div>
                         </a>
-                    </li>
-                </ul>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('usuarios.users' ) }}" style="text-decoration:none;">
+                            <div class="d-grid gap-2">
+                                <button type="button" name="" id="" class="btn btn-outline-primary" disabled>
+                                    <i class="fa fa-tools fa-5x" aria-hidden="true"></i>
+                                    <p>Mantenimiento</p>
+                                </button>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('logout' ) }}" style="text-decoration:none;">
+                            <div class="d-grid gap-2">
+                                <button type="button" name="" id="" class="btn btn-outline-danger">
+                                    <i class="fa fa-window-close fa-5x" aria-hidden="true"></i>
+                                    <p>Cerrar Sesión</p>
+                                </button>
+                            </div>
+                        </a>
+                    </div>
+                </div>
             </div>
-            
         </div>
+
     </div>
+</div>
 {% endblock %}
