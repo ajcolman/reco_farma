@@ -151,8 +151,8 @@ class C_IA_Trainer():
         face = faces[0]
 
         # Ajustar las coordenadas de la cara para capturar un área más grande
-        x, y, w, h = face.left() - 30, face.top() - 30, face.width() + \
-            60, face.height() + 60
+        x, y, w, h = face.left() - 15, face.top() - 15, face.width() + \
+            30, face.height() + 30
 
         # Asegurar que las coordenadas no sean negativas
         x, y = max(x, 0), max(y, 0)
