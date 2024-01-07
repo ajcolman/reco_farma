@@ -147,7 +147,7 @@ class C_IA_Trainer():
         if not faces:
             return "No se detectaron caras frente a la cámara"
 
-        # Tomar la primera cara detectada (puedes ajustar esto según tus necesidades)
+        # Tomar la primera cara detectada
         face = faces[0]
 
         # Ajustar las coordenadas de la cara para capturar un área más grande
