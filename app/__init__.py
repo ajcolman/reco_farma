@@ -6,6 +6,7 @@ from flask_login import LoginManager, login_required, logout_user
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from app.config import config
+from app.controllers.C_Doctors import C_Doctors
 from app.controllers.C_IA_Trainer import C_IA_Trainer
 from app.controllers.C_Login import C_Login
 from app.controllers.C_People import C_People
@@ -21,6 +22,7 @@ def create_app():
     login = C_Login
     users = C_Users
     people = C_People
+    doctors = C_Doctors
     ia = C_IA_Trainer
     db.init_app(app)
     migrate.init_app(app)
@@ -32,6 +34,7 @@ def create_app():
     app.register_blueprint(users.usuarios)
     app.register_blueprint(people.peop)
     app.register_blueprint(ia.ia)
+    app.register_blueprint(doctors.doctors)
     
     @app.template_filter()
     def imagen_a_base64(ruta_imagen):
