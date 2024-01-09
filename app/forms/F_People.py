@@ -19,7 +19,8 @@ class F_Busqueda_Persona(FlaskForm):
     txtApellidosBusqPersona = StringField('Apellidos')
 
 class F_Persona(FlaskForm):
-    txtDniPersona = IntegerField("Cédula", validators=[DataRequired("La cédula es un campo Requerido")])
+    txtDniPersona = IntegerField("Cédula", validators=[DataRequired(
+        "La cédula es un campo Requerido"), NumberRange(min=0)])
     txtNombrePersona = StringField(
         "Nombres", validators=[DataRequired("El nombre es un campo Requerido")])
     txtApellidoPersona = StringField("Apellidos", validators=[
