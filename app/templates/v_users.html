@@ -237,7 +237,7 @@
         if (response.status === 200) {
             const users = response.data.data;
 
-            document.querySelector('#listUsers').innerHTML = ""; // Clear existing content
+            document.querySelector('#listUsers').innerHTML = "";
             var h = "";
             for (const user of users) {
                 h += `

@@ -1,5 +1,5 @@
 from datetime import date
-from flask import Blueprint, json, render_template, request
+from flask import Blueprint, json, render_template, request, session
 from flask_login import login_required
 from app.forms.F_People import F_Busqueda_Persona
 from app.forms.F_Users import F_Registro_Usuario
@@ -40,7 +40,7 @@ class C_Users():
                     user.user_password = Users.hash_password(contrasena)
                 user.user_name = person_data.peop_dni
                 user.user_role_id = rol
-                user.user_updated_id = 1
+                user.user_updated_id = session['user_id']
                 user.user_state = estado
                 db.session.commit()
             else:
@@ -51,7 +51,7 @@ class C_Users():
                 if contrasena!="":
                     user.user_password = Users.hash_password(contrasena)
                 user.user_role_id = rol
-                user.user_created_id = 1
+                user.user_created_id = session['user_id']
                 user.user_state = estado
                 db.session.add(user)
                 db.session.commit()

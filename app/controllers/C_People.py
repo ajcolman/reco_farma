@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 import os
 import uuid
 from flask import Blueprint, current_app, json, render_template, request, session
@@ -19,19 +19,25 @@ class C_People():
         if form.validate_on_submit():
             dni = form.txtCedulaBusqPersona.data
             names = form.txtNombBusqPersona.data
-            lastname = form.txtApellidosBusqPersona.data
+            lastnames = form.txtApellidosBusqPersona.data
             people = People.query.filter((People.peop_dni == dni) | (
-                People.peop_names == names.upper())).all()
+                People.peop_names == names.upper()) | (
+                People.peop_lastnames == lastnames.upper())).all()
             people_data = [
                 {
                     "id": person.peop_id,
                     "dni": person.peop_dni,
                     "names": person.peop_names,
                     "lastname": person.peop_lastnames,
+                    "birthdate": person.peop_birthdate.strftime("%d/%m/%Y"),
+                    "gender": "MASCULINO" if person.peop_gender == 'M' else 'FEMENINO',
+                    "age": C_People.calcular_edad(person.peop_birthdate)
                 }
                 for person in people
             ]
             message['correcto'] = people_data
+            
+            
         else:
             errores = {}
             for campo, errores_campo in form.errors.items():
@@ -188,6 +194,13 @@ class C_People():
             message['error'] = {}
             message['error']['validacion'] = '<strong>Por favor, corrija los errores en el formulario.</strong><br>'
             message['error']['detalles'] = errores
+        return json.dumps(message)
+    
+    @peop.route('/get_person_last_photo/<person>')
+    def get_person_last_photo(person):
+        message = {"correcto": '', "alerta": '', "error": ''}
+        photo = PeoplePhotos.query.filter_by(peph_peop_id=person).order_by(PeoplePhotos.peph_id.desc()).first()
+        message['photo'] = photo.peph_path
         return json.dumps(message)
 
     def calcular_edad(fecha_nacimiento):

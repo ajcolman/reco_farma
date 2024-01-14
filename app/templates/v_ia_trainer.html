@@ -49,7 +49,7 @@
     var btnPruebaIdentificación = document.querySelector("#btnPruebaIdentificación");
         btnPruebaIdentificación.addEventListener('click', (e) => {
             e.preventDefault();
-            axios.post("{{ url_for('ia.identify' ) }}", { TRAIN: "INDENTIFY" }, axiosConfig())
+            axios.post("{{ url_for('ia.identify' ) }}", { TRAIN: "IDENTIFY" }, axiosConfig())
                 .then(function (response) {
                     var r = response.data;
                     if (r['correcto']!="") {

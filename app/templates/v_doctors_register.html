@@ -73,7 +73,8 @@
                                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                                 Cerrar
                                             </button>
-                                            <button type="button" class="btn btn-primary">Guardar datos</button>
+                                            {{ formDoct.hidden_tag() }}
+                                            <button type="submit" class="btn btn-primary">Guardar datos</button>
                                         </div>
                                     </div>
                                 </div>
@@ -159,10 +160,12 @@
                             <table class="table table-primary">
                                 <thead>
                                     <tr>
+                                        <th scope="col">Acción</th>
                                         <th scope="col">Nro. de Mátricula</th>
                                         <th scope="col">Nombre y Apellido</th>
                                         <th scope="col">Institución</th>
-                                        <th scope="col">Acción</th>
+                                        <th scope="col">Especialidad</th>
+                                        <th scope="col">Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody id="listMedicos">
@@ -217,5 +220,77 @@
                 error
             })
     });
+
+    var frmMedicos = document.querySelector("#frmMedicos");
+        frmMedicos.addEventListener('submit', (e) => {
+            e.preventDefault();
+            var formData = new FormData(frmMedicos);
+            axios.post("{{ url_for('doctors.doctors_data_register' ) }}", formData)
+                .then(function (response) {
+                    var mensajes = response.data;
+                    if (mensajes['correcto'] != '') {
+                        generarMensajeCorrecto(mensajes, getDoctors);
+                    }
+                    if (mensajes['error'] != '') {
+                        generarMensajeError(mensajes);
+                    }
+                })
+                .catch(function (error) {
+                    error
+                })
+        });
+
+    const url_get_users = "{{ url_for('doctors.get_doctors_list' ) }}";
+
+        const getDoctors = async () => {
+            const response = await axios.get(url_get_users);
+
+            if (response.status === 200) {
+                const doctors = response.data.data;
+
+                document.querySelector('#listMedicos').innerHTML = ""; 
+                var h = "";
+                for (const doctor of doctors) {
+                    h += `
+                <tr>
+                <td>
+                <div class="d-grid gap-2">
+                    <button
+                    type="button"
+                    name="btnEditar"
+                    class="btnEditar btn btn-secondary"
+                    value="${doctor.id}/${doctor.person}/${doctor.person_id}/${doctor.state}/${doctor.institute_id}/${doctor.especialty_id}/${doctor.prof_reg}"
+                    data-bs-target="#mdlMedicos"
+                    data-bs-toggle="modal"
+                    >
+                    Editar
+                    </button>
+                </div>
+                </td>
+                <td>${doctor.prof_reg}</td>
+                <td>${doctor.person}</td>
+                <td>${doctor.institute}</td>
+                <td>${doctor.especialty}</td>
+                <td>${doctor.state_full}</td>
+                </tr>
+                `;
+                    document.querySelector('#listMedicos').innerHTML = h;
+
+                }
+                const btnEditar = document.querySelector(".btnEditar");
+                btnEditar.addEventListener('click', (e) => {
+                    var value = btnEditar.value.split('/');
+                    document.getElementById("txtPersona").value = value[1];
+                    document.getElementById("txtPersonaCod").value = value[2];
+                    document.getElementById("sltEstado").value = value[3];
+                    document.getElementById("sltInstitucionMedica").value = value[4];
+                    document.getElementById("sltEspecialidadMedica").value = value[5];
+                    document.getElementById("txtDoctorMatricula").value = value[6];
+                });
+            }
+        };
+
+
+        getDoctors();
 </script>
 {% endblock %}

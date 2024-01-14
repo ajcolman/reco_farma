@@ -2,6 +2,7 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from app.utils.utils import asuncion_timezone
 db = SQLAlchemy()
 
 class Roles(db.Model):
@@ -17,9 +18,9 @@ class Users(db.Model, UserMixin):
     user_password = db.Column(db.String(255), nullable=False)
     user_state = db.Column(db.String(1), default='A')
     user_role_id = db.Column(db.Integer, db.ForeignKey('roles.role_id'), nullable=False)
-    user_created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
     user_created_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    user_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    user_updated_at = db.Column(db.DateTime, onupdate=datetime.now(asuncion_timezone))
     user_updated_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     user_peop_id = db.Column(db.Integer, db.ForeignKey('people.peop_id'))
     user_register = db.relationship(
@@ -45,10 +46,10 @@ class People(db.Model):
     peop_dni = db.Column(db.String(8), unique=True, nullable=False)
     peop_gender = db.Column(db.String(1), nullable=False)
     peop_birthdate = db.Column(db.Date(), nullable=False)
-    peop_created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    peop_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
     peop_user_created_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    peop_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    peop_updated_at = db.Column(db.DateTime, onupdate=datetime.now(asuncion_timezone))
     peop_user_updated_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
     peop_register = db.relationship(
         'Users', backref='peop_register', foreign_keys=[peop_user_created_id])
@@ -62,10 +63,10 @@ class Institutions(db.Model):
         inst_trade_name = db.Column(db.String(200), nullable=False)
         inst_itin = db.Column(db.String(30), nullable=False)
         inst_state = db.Column(db.String(1), default='A', nullable=False)
-        inst_created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        inst_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
         inst_user_created_id = db.Column(
             db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-        inst_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+        inst_updated_at = db.Column(db.DateTime, onupdate=datetime.now(asuncion_timezone))
         inst_user_updated_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
         inst_register = db.relationship(
             'Users', backref='inst_register', foreign_keys=[inst_user_created_id])
@@ -82,10 +83,10 @@ class MedicalEspecialties(db.Model):
     mees_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     mees_desc = db.Column(db.String(100), nullable=False, unique=True)
     mees_state = db.Column(db.String(1), default='A', nullable=False)
-    mees_created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    mees_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
     mees_user_created_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    mees_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    mees_updated_at = db.Column(db.DateTime, onupdate=datetime.now(asuncion_timezone))
     mees_user_updated_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'))
     mees_register = db.relationship(
@@ -101,10 +102,10 @@ class Doctors(db.Model):
     doct_mees_id = db.Column(db.Integer, db.ForeignKey('medical_especialties.mees_id'))
     doct_inst_id = db.Column(db.Integer, db.ForeignKey('institutions.inst_id'))
     doct_state = db.Column(db.String(1), default='A', nullable=False)
-    doct_created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    doct_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
     doct_user_created_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    doct_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    doct_updated_at = db.Column(db.DateTime, onupdate=datetime.now(asuncion_timezone))
     doct_user_updated_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'))
     doct_register = db.relationship(
@@ -119,10 +120,10 @@ class Pharmacist(db.Model):
         'people.peop_id'), nullable=False)
     phar_inst_id = db.Column(db.Integer, db.ForeignKey('institutions.inst_id'))
     phar_state = db.Column(db.String(1), default='A', nullable=False)
-    phar_created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    phar_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
     phar_user_created_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    phar_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    phar_updated_at = db.Column(db.DateTime, onupdate=datetime.now(asuncion_timezone))
     phar_user_updated_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'))
     phar_register = db.relationship(
@@ -133,16 +134,17 @@ class Pharmacist(db.Model):
 class PeoplePrescription(db.Model):
     __tablename__ = "people_prescription"
     pepr_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    pepr_dx = db.Column(db.String(4000))
     pepr_peop_id = db.Column(db.Integer, db.ForeignKey('people.peop_id'), nullable=False)
     pepr_doct_id = db.Column(db.Integer, db.ForeignKey('doctors.doct_id'), nullable=False)
     pepr_state = db.Column(db.String(1), default='A', nullable=False)
     pepr_phar_id = db.Column(db.Integer, db.ForeignKey('pharmacist.phar_id'))
     pepr_dispatched = db.Column(db.String(1), default='N')
     pepr_date_dispatched = db.Column(db.DateTime)
-    pepr_created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    pepr_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
     pepr_user_created_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    pepr_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    pepr_updated_at = db.Column(db.DateTime, onupdate=datetime.now(asuncion_timezone))
     pepr_user_updated_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'))
     pepr_register = db.relationship(
@@ -154,12 +156,13 @@ class PeoplePrescriptionDetails(db.Model):
     __tablename__ = "people_prescription_details"
     prde_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     prde_pepr_id = db.Column(db.Integer, db.ForeignKey('people_prescription.pepr_id'), nullable=False)
-    prde_details = db.Column(db.String(4000), nullable=False)
+    prde_medicine = db.Column(db.String(100), nullable=False)
+    prde_medical_indications = db.Column(db.String(4000), nullable=False)
     prde_state = db.Column(db.String(1), default='A', nullable=False)
-    prde_created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    prde_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
     prde_user_created_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    prde_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    prde_updated_at = db.Column(db.DateTime, onupdate=datetime.now(asuncion_timezone))
     prde_user_updated_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'))
     prde_register = db.relationship(
@@ -173,10 +176,10 @@ class PeoplePhotos(db.Model):
     peph_path = db.Column(db.String(100), nullable=False)
     peph_peop_id = db.Column(db.Integer, db.ForeignKey('people.peop_id'), nullable=False)
     peph_state = db.Column(db.String(1), default='A', nullable=False)
-    peph_created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    peph_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
     peph_user_created_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'), nullable=False)
-    peph_updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    peph_updated_at = db.Column(db.DateTime, onupdate=datetime.now(asuncion_timezone))
     peph_user_updated_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'))
     peph_register = db.relationship(
