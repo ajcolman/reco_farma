@@ -43,6 +43,16 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row" id="divbtnHistorial" hidden>
+                        <div class="col-md-12 mb-3">
+                            <div class="d-grid gap-2">
+                                <button type="button" name="btnHistorialConsulta" id="btnHistorialConsulta"
+                                    class="btn btn-light" data-bs-toggle="modal" data-bs-target="#mdlHistorialConsulta">
+                                    Ver Historial de Consultas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-12 mb-3">
                             <div class="form-floating">
@@ -168,6 +178,45 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="mdlHistorialConsulta" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false"
+    role="dialog" aria-labelledby="modalTitleId" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitleId">
+                    Últimas 10 consultas
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col"></th>
+                                        <th scope="col">Fecha</th>
+                                        <th scope="col">Médico</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="listConsultas">
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 {% block scripts %}
 <script>
@@ -214,6 +263,7 @@
                         document.getElementById("person-birthdate").innerHTML = birthdate;
                         getPersonPhoto(id);
                         document.getElementById("person-data").removeAttribute("hidden");
+                        document.getElementById("divbtnHistorial").removeAttribute("hidden");
                     });
                 }
             })
@@ -253,8 +303,20 @@
                 var r = response.data;
                 if (r['photo'] != "") {
                     var photo = r['photo'];
-                    console.log(photo)
                     document.getElementById("person-last-photo").innerHTML = '<img src="{{ url_for("static", filename="uploads/people_photo/") }}/' + photo + '" class="img-fluid img-thumbnail rounded" alt="Last Photo" style="height: 200px" />';
+                }
+                if (r['consultation'] != "") {
+                    var c = r['consultation'];
+                    var z = "";
+                    for (var i = 0, len = c.length; i < len; i++) {
+                        z += '<tr>';
+                        z += '<td><a name="" id="" class="btn btn-primary" href="{{ url_for("doctors.consultation_details", consultation="" ) }}/'+c[i].id+'" role="button" >Ver Detalles</a></td>';
+                        z += '<td>' + c[i].date + '</td>';
+                        z += '<td>' + c[i].doctor + '</td>';
+                        z += '</tr>';
+                    };
+                    document.getElementById("listConsultas").innerHTML = z;
+
                 }
             })
             .catch(function (error) {
@@ -263,24 +325,24 @@
     }
     var cant = 0;
 
-        function addField() {
-            cant++;
+    function addField() {
+        cant++;
 
-            // Realizar una solicitud AJAX al servidor para obtener el nuevo fragmento HTML
-            fetch(`/get_dynamic_fields/${cant}`)
-                .then(response => response.text())
-                .then(htmlFragment => {
-                    // Crear un nuevo div con la clase "row" y agregar el fragmento HTML
-                    var container = document.getElementById('dynamic-fields-container');
-                    var newField = document.createElement('div');
-                    newField.classList.add('row');
-                    newField.innerHTML = htmlFragment;
+        // Realizar una solicitud AJAX al servidor para obtener el nuevo fragmento HTML
+        fetch(`/get_dynamic_fields/${cant}`)
+            .then(response => response.text())
+            .then(htmlFragment => {
+                // Crear un nuevo div con la clase "row" y agregar el fragmento HTML
+                var container = document.getElementById('dynamic-fields-container');
+                var newField = document.createElement('div');
+                newField.classList.add('row');
+                newField.innerHTML = htmlFragment;
 
-                    // Agregar el nuevo campo al contenedor
-                    container.appendChild(newField);
-                })
-                .catch(error => console.error('Error:', error));
-        }
+                // Agregar el nuevo campo al contenedor
+                container.appendChild(newField);
+            })
+            .catch(error => console.error('Error:', error));
+    }
 
 
     var frmRegConsulta = document.querySelector('#frmRegConsulta');
@@ -288,12 +350,12 @@
         e.preventDefault();
         var formData = new FormData(frmRegConsulta);
         axios.post("{{ url_for('doctors.registers_data_consultation' ) }}", formData)
-        .then(function (response) {
-            var r = response.data;
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
+            .then(function (response) {
+                var r = response.data;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     });
 </script>
 {% endblock %}

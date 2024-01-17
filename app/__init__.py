@@ -7,7 +7,7 @@ from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from app.config import config
 from app.controllers.C_Doctors import C_Doctors
-from app.controllers.C_IA_Trainer_bk import C_IA_Trainer
+from app.controllers.C_IA_Trainerbk import C_IA_Trainer
 from app.controllers.C_Login import C_Login
 from app.controllers.C_People import C_People
 from app.controllers.C_Users import C_Users

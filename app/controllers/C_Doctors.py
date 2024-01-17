@@ -3,9 +3,10 @@ from flask import Blueprint, render_template, json, render_template_string, requ
 from flask_login import login_required
 from app.forms.F_Doctors import F_Consulta_Medica, F_Doctores
 from app.forms.F_People import F_Busqueda_Persona
-from app.models.Models import People, PeoplePrescription, PeoplePrescriptionDetails, db, Doctors, Institutions, MedicalEspecialties
+from app.models.Models import People, PeoplePhotos, PeoplePrescription, PeoplePrescriptionDetails, db, Doctors, Institutions, MedicalEspecialties
 from sqlalchemy import or_, func
 from app.utils.utils import asuncion_timezone
+from sqlalchemy.orm import aliased
 
 class C_Doctors():
     doctors = Blueprint('doctors', __name__)
@@ -184,3 +185,25 @@ class C_Doctors():
 
         # Renderizar el string de plantilla y enviarlo como respuesta
         return render_template_string(template, index=index)
+    
+    @doctors.route('/consultation_details/<consultation>')
+    def consultation_details(consultation):
+        patient_alias = aliased(People, name='patient_alias')
+        doctor_alias = aliased(People, name='doctor_alias')
+
+        # Consulta corregida
+        consultation = db.session.query(
+            PeoplePrescription.pepr_id.label('consultation'),
+            patient_alias.peop_id.label('patient_id'),
+            PeoplePrescription.pepr_dx.label('diagnostic'),
+            func.concat(patient_alias.peop_names, ' ', patient_alias.peop_lastnames).label('patient'),
+            patient_alias.peop_dni.label('dni'),
+            patient_alias.peop_gender.label('gender'),
+            patient_alias.peop_birthdate.label('birthdate'),
+            doctor_alias.peop_id.label('doctor_id'),
+            PeoplePrescription.pepr_dx.label('diagnostic'),
+            func.concat(doctor_alias.peop_names, ' ', doctor_alias.peop_lastnames).label('doctor')
+        ).join(patient_alias, PeoplePrescription.pepr_peop_id == patient_alias.peop_id).join(doctor_alias, PeoplePrescription.pepr_doct_id == doctor_alias.peop_id).filter(PeoplePrescription.pepr_id==consultation).first()
+        photo = PeoplePhotos.query.filter(PeoplePhotos.peph_peop_id==consultation.patient_id).order_by(PeoplePhotos.peph_id.desc()).first()
+        medications = PeoplePrescriptionDetails.query.filter(PeoplePrescriptionDetails.prde_pepr_id==consultation.patient_id).all()
+        return render_template('v_consultation_details.html', title='Detalles de Consulta', consultations=consultation, photo=photo, medications=medications)

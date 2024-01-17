@@ -5,7 +5,7 @@ from flask import Blueprint, current_app, json, render_template, request, sessio
 from flask_login import login_required
 
 from app.forms.F_People import F_Busqueda_Persona, F_Fotos_Persona, F_Persona
-from app.models.Models import People, PeoplePhotos, db
+from app.models.Models import Doctors, People, PeoplePhotos, PeoplePrescription, db
 
 
 class C_People():
@@ -128,7 +128,6 @@ class C_People():
             People.peop_gender.label('gender'),
             People.peop_birthdate.label('birthdate')).paginate(
             page=request.args.get('page', 1), per_page=10)
-
         return {
             "data": [
                 {
@@ -200,7 +199,16 @@ class C_People():
     def get_person_last_photo(person):
         message = {"correcto": '', "alerta": '', "error": ''}
         photo = PeoplePhotos.query.filter_by(peph_peop_id=person).order_by(PeoplePhotos.peph_id.desc()).first()
+        consultation = PeoplePrescription.query.with_entities(PeoplePrescription.pepr_id.label('id'), (People.peop_names+' '+People.peop_lastnames).label('doctor'), PeoplePrescription.pepr_created_at.label('date')).join(Doctors, Doctors.doct_id == PeoplePrescription.pepr_doct_id).join(People, People.peop_id == Doctors.doct_peop_id).filter(PeoplePrescription.pepr_peop_id == person).order_by(PeoplePrescription.pepr_id.desc()).paginate(
+            page=1, per_page=10)
         message['photo'] = photo.peph_path
+        message['consultation'] = [
+            {
+                "id": prescription.id,
+                "doctor": prescription.doctor,
+                "date": prescription.date.strftime("%d/%m/%Y")
+                } for prescription in consultation
+            ]
         return json.dumps(message)
 
     def calcular_edad(fecha_nacimiento):
