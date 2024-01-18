@@ -288,6 +288,7 @@
                     document.getElementById("person-birthdate").innerHTML = r['birthdate'];
                     getPersonPhoto(r['cod']);
                     document.getElementById("person-data").removeAttribute("hidden");
+                    document.getElementById("divbtnHistorial").removeAttribute("hidden");
                 } else {
                     generarMensajeAlerta(r);
                 }

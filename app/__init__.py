@@ -1,20 +1,20 @@
 import base64
 from datetime import date
 import os
-from flask import Flask, Response,redirect,url_for,render_template,request
-from flask_login import LoginManager, login_required, logout_user
+from flask import Flask, Response,redirect, session,url_for,render_template,request
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from app.config import config
 from app.controllers.C_Doctors import C_Doctors
 from app.controllers.C_IA_Trainerbk import C_IA_Trainer
 from app.controllers.C_Login import C_Login
+from app.controllers.C_Maintenance import C_Maintenance
 from app.controllers.C_People import C_People
+from app.controllers.C_Pharma import C_Pharma
 from app.controllers.C_Users import C_Users
 from app.models.Models import Users, db
 import cv2
 csrf = CSRFProtect()
-login_manager = LoginManager()
 def create_app():
     app=Flask(__name__)
     app.config.from_object(config)
@@ -24,17 +24,18 @@ def create_app():
     people = C_People
     doctors = C_Doctors
     ia = C_IA_Trainer
+    pharma = C_Pharma
+    maintenance = C_Maintenance
     db.init_app(app)
     migrate.init_app(app)
     csrf.init_app(app)
-    login_manager.init_app(app)
-    login_manager.login_view = "login.index"
-    login_manager.login_message = "Debes iniciar sesión para acceder a esta página"
     app.register_blueprint(login.login)
     app.register_blueprint(users.usuarios)
     app.register_blueprint(people.peop)
     app.register_blueprint(ia.ia)
     app.register_blueprint(doctors.doctors)
+    app.register_blueprint(pharma.pharma)
+    app.register_blueprint(maintenance.maint)
     
     @app.template_filter()
     def imagen_a_base64(ruta_imagen):
@@ -76,15 +77,10 @@ def create_app():
 
 
     app.jinja_env.filters['base64'] = calcular_edad
-
-    @login_manager.user_loader
-    def load_user(user_id):
-        # Implementa la lógica para cargar el objeto de usuario del usuario con el ID especificado
-        return Users.query.get(user_id)
     
     @app.route('/logout')
     def logout():
-        logout_user()
+        session.clear()
         return redirect(url_for('login.index'))
     
     def generate_frames():

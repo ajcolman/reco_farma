@@ -1,17 +1,17 @@
 from datetime import date, datetime
 from flask import Blueprint, render_template, json, render_template_string, request, session
-from flask_login import login_required
 from app.forms.F_Doctors import F_Consulta_Medica, F_Doctores
 from app.forms.F_People import F_Busqueda_Persona
 from app.models.Models import People, PeoplePhotos, PeoplePrescription, PeoplePrescriptionDetails, db, Doctors, Institutions, MedicalEspecialties
 from sqlalchemy import or_, func
-from app.utils.utils import asuncion_timezone
+from app.utils.utils import asuncion_timezone, check_role
 from sqlalchemy.orm import aliased
 
 class C_Doctors():
     doctors = Blueprint('doctors', __name__)
 
     @doctors.route('/doctors_register')
+    @check_role(['ADMINISTRADOR'])
     def doctors_register():
         formBusq = F_Busqueda_Persona()
         formDoct = F_Doctores()
@@ -22,12 +22,13 @@ class C_Doctors():
         return render_template('v_doctors_register.html', title="Registro de Médicos", formBusq=formBusq, formDoct=formDoct)
 
     @doctors.route('/doctors_data_register', methods=['POST'])
+    @check_role(['ADMINISTRADOR'])
     def doctors_data_register():
         message = {"correcto": '', "alerta": '', "error": ''}
         form = F_Doctores()
-        me = [(ep.mees_id, ep.mees_desc) for ep in MedicalEspecialties.query.all()]
+        me = [(ep.mees_id, ep.mees_desc) for ep in MedicalEspecialties.query.filter_by(mees_state='A').all()]
         form.sltEspecialidadMedica.choices=me
-        inst = [(i.inst_id, i.inst_trade_name) for i in Institutions.query.all()]
+        inst = [(i.inst_id, i.inst_trade_name) for i in Institutions.query.filter_by(inst_state='A').all()]
         form.sltInstitucionMedica.choices = inst
         if form.validate_on_submit():
             person = form.txtPersonaCod.data
@@ -69,7 +70,7 @@ class C_Doctors():
         return json.dumps(message)
     
     @doctors.route('/get_doctors_list', methods=['GET'])
-    @login_required
+    @check_role(['ADMINISTRADOR', 'MEDICO'])
     def get_doctors_list():
         message = {"correcto": '', "alerta": '', "error": ''}
         doctors = Doctors.query.with_entities(Doctors.doct_id.label("id"), (People.peop_names+' '+People.peop_lastnames).label('person'), Doctors.doct_peop_id.label('person_id'), Institutions.inst_trade_name.label('institute'), Institutions.inst_id.label('institute_id'), MedicalEspecialties.mees_desc.label('especialty'), MedicalEspecialties.mees_id.label('especialty_id'), Doctors.doct_state.label('state'), Doctors.doct_professional_registration.label('prof_reg')).join(People).join(Institutions).join(MedicalEspecialties).paginate(
@@ -94,12 +95,14 @@ class C_Doctors():
         }
         
     @doctors.route('/medical_consultations')
+    @check_role(['MEDICO'])
     def medical_consultations():
         formConsulta = F_Consulta_Medica()
         formBusq = F_Busqueda_Persona()
         return render_template('v_medical_consultations.html', title="Consultas Médicas", formFP=formConsulta, formBusq=formBusq)
 
     @doctors.route('/registers_data_consultation', methods=['POST'])
+    @check_role(['MEDICO'])
     def registers_data_consultation():
         message = {"correcto": '', "alerta": '', "error": ''}
         form = F_Consulta_Medica(request.form)
@@ -140,6 +143,7 @@ class C_Doctors():
                         existMedication.prde_state = 'A'
                         existMedication.prde_user_updated_id = session['user_id']
                         db.session.commit()
+                        message['correcto'] = "Se ha registrado modificado los datos de la consulta"
                     else:
                         medication = PeoplePrescriptionDetails()
                         medication.prde_pepr_id = pepr_id
@@ -149,7 +153,7 @@ class C_Doctors():
                         medication.prde_user_created_id = session['user_id']
                         db.session.add(medication)
                         db.session.commit()
-                message['correcto'] = "Se ha registrado correctamente los datos de la consulta"
+                        message['correcto'] = "Se ha registrado modificado los datos de la consulta"
             except Exception as e:
                 db.session.rollback()
                 raise e
@@ -167,6 +171,7 @@ class C_Doctors():
         return json.dumps(message)
     
     @doctors.route('/get_dynamic_fields/<int:index>')
+    @check_role(['MEDICO'])
     def get_dynamic_fields(index):
         template = '''
         <div class="col-md-6 mb-3">
@@ -187,6 +192,7 @@ class C_Doctors():
         return render_template_string(template, index=index)
     
     @doctors.route('/consultation_details/<consultation>')
+    @check_role(['MEDICO'])
     def consultation_details(consultation):
         patient_alias = aliased(People, name='patient_alias')
         doctor_alias = aliased(People, name='doctor_alias')
@@ -205,5 +211,5 @@ class C_Doctors():
             func.concat(doctor_alias.peop_names, ' ', doctor_alias.peop_lastnames).label('doctor')
         ).join(patient_alias, PeoplePrescription.pepr_peop_id == patient_alias.peop_id).join(doctor_alias, PeoplePrescription.pepr_doct_id == doctor_alias.peop_id).filter(PeoplePrescription.pepr_id==consultation).first()
         photo = PeoplePhotos.query.filter(PeoplePhotos.peph_peop_id==consultation.patient_id).order_by(PeoplePhotos.peph_id.desc()).first()
-        medications = PeoplePrescriptionDetails.query.filter(PeoplePrescriptionDetails.prde_pepr_id==consultation.patient_id).all()
+        medications = PeoplePrescriptionDetails.query.filter(PeoplePrescriptionDetails.prde_pepr_id==consultation.consultation).all()
         return render_template('v_consultation_details.html', title='Detalles de Consulta', consultations=consultation, photo=photo, medications=medications)

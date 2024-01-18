@@ -1,13 +1,13 @@
 from flask import Blueprint, json, redirect, render_template, session, url_for
-from flask_login import current_user, login_user
 
 from app.forms.F_Login import F_Login
-from app.models.Models import People, Users
+from app.models.Models import People, Roles, Users
+from app.utils.utils import check_role
 class C_Login():
     login = Blueprint('login',__name__)
     @login.route('/')
     def index():
-        if current_user.is_authenticated:
+        if 'logged' in session:
             return redirect(url_for('login.principal'))
         form = F_Login()
         return render_template('v_login.html', title='Login', form=form)
@@ -19,16 +19,16 @@ class C_Login():
         if form.validate_on_submit():
             usuario = form.txtUsuario.data
             contrasena = form.txtPassword.data
-            user_data = Users.query.filter_by(user_name = usuario, user_state = 'A').first()
+            user_data = Users.query.with_entities(Users.user_id.label('user_id'), Roles.role_desc.label('rol'), Users.user_password.label('user_password'), Users.user_state.label('user_state'), Users.user_peop_id).join(Roles, Roles.role_id == Users.user_role_id).filter(Users.user_name == usuario, Users.user_state == 'A').first()
             if user_data is not None:
                 password_hash = user_data.user_password
                 if Users.check_password_hash(password_hash,contrasena):
-                    login_user(user_data)
                     person_people = People.query.filter_by(peop_id = user_data.user_peop_id).first()
                     session['logged'] = True
                     session['user_id'] = user_data.user_id
                     session['habilitation'] = user_data.user_state
                     session['person'] = person_people.peop_names + ' ' + person_people.peop_lastnames
+                    session['rol'] = user_data.rol
                     message['correcto'] = "Se ha comprobado las credenciales"
                 else:
                     message['error'] = "Usuario o contraseña incorrectas"
@@ -46,5 +46,6 @@ class C_Login():
         return json.dumps(message)
     
     @login.route('/principal')
+    @check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
     def principal():
         return render_template('v_principal.html', title="Bienvenido")

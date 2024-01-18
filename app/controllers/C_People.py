@@ -2,17 +2,16 @@ from datetime import date, datetime
 import os
 import uuid
 from flask import Blueprint, current_app, json, render_template, request, session
-from flask_login import login_required
-
 from app.forms.F_People import F_Busqueda_Persona, F_Fotos_Persona, F_Persona
 from app.models.Models import Doctors, People, PeoplePhotos, PeoplePrescription, db
+from app.utils.utils import check_role
 
 
 class C_People():
     peop = Blueprint('people', __name__)
 
     @peop.route('/search_people', methods=['POST'])
-    @login_required
+    @check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
     def search_people():
         message = {"correcto": '', "alerta": '', "error": ''}
         form = F_Busqueda_Persona(request.form)
@@ -50,13 +49,13 @@ class C_People():
         return json.dumps(message)
 
     @peop.route('/people')
-    @login_required
+    @check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
     def people():
         form = F_Persona()
         return render_template('v_people.html', title='Listado de Personas', form=form)
 
     @peop.route('/comprobate_dni', methods=['POST'])
-    @login_required
+    @check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
     def comprobate_dni():
         message = {"correcto": '', "alerta": '', "error": ''}
         dni = request.form["txtDniPersona"]
@@ -72,7 +71,7 @@ class C_People():
         return json.dumps(message)
 
     @peop.route('/register_data', methods=['POST'])
-    @login_required
+    @check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
     def register_data():
         message = {"correcto": '', "alerta": '', "error": ''}
         form = F_Persona(request.form)
@@ -117,7 +116,7 @@ class C_People():
         return json.dumps(message)
 
     @peop.route('/get_people_data')
-    @login_required
+    @check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
     def get_people_data():
         message = {"correcto": '', "alerta": '', "error": ''}
         people = People.query.with_entities(
@@ -146,7 +145,7 @@ class C_People():
         }
 
     @peop.route('/take_photo/<dni>')
-    @login_required
+    @check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
     def take_photo(dni):
         form = F_Fotos_Persona()
         person_data = People.query.with_entities(People.peop_dni.label('dni'), People.peop_names.label(
@@ -154,7 +153,7 @@ class C_People():
         return render_template('v_take_photo.html', title='Tomar Foto Persona', person_data=person_data, form=form, dni=dni)
 
     @peop.route('/register_person_photo/<dni>', methods=['POST'])
-    @login_required
+    @check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
     def register_person_photo(dni):
         message = {"correcto": '', "alerta": '', "error": ''}
         form = F_Fotos_Persona(request.form)
@@ -196,6 +195,7 @@ class C_People():
         return json.dumps(message)
     
     @peop.route('/get_person_last_photo/<person>')
+    @check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
     def get_person_last_photo(person):
         message = {"correcto": '', "alerta": '', "error": ''}
         photo = PeoplePhotos.query.filter_by(peph_peop_id=person).order_by(PeoplePhotos.peph_id.desc()).first()

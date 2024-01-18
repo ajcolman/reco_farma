@@ -1,7 +1,6 @@
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin
 from app.utils.utils import asuncion_timezone
 db = SQLAlchemy()
 
@@ -11,7 +10,7 @@ class Roles(db.Model):
     role_desc = db.Column(db.String(100), unique=True, nullable=False)
 
 
-class Users(db.Model, UserMixin):
+class Users(db.Model):
     __tablename__ = 'users'
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_name = db.Column(db.String(10), unique=True, nullable=False)

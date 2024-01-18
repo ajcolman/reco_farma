@@ -1,0 +1,183 @@
+{% extends 'v_master.html' %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">{{title}}</h4>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card border-primary mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Listado de Especialidades Médicas</h5>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div
+                                                class="table-responsive"
+                                            >
+                                                <table
+                                                    class="table table-striped align-middle"
+                                                >
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>Descripción</th>
+                                                            <th>Estado</th>
+                                                            <th>Acción</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="listEspecialidadesMedicas">
+                                                        <tr>
+                                                            <td colspan="3" class="text-center"><h4>No hay datos registrados</h4></td>
+                                                        </tr>
+                                                    </tbody>
+                                                    <tfoot>
+                                                        
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="card border-primary mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Listado de Instituciones Médicas</h5>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped align-middle">
+                                                    <thead class="table-light">
+                                                        <tr>
+                                                            <th>R.U.C.</th>
+                                                            <th>Nombre Fantasia</th>
+                                                            <th>Razón Social</th>
+                                                            <th>Estado</th>
+                                                            <th>Acción</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="listInstitucionesMedicas">
+                                                        <tr>
+                                                            <td colspan="5" class="text-center">
+                                                                <h4>No hay datos registrados</h4>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                    <tfoot>
+                        
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                        
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+{% endblock %}
+{% block scripts %}
+    <script>
+        function getMedicalEspecialties() {
+            axios.get("{{ url_for('maint.get_medical_especialties' ) }}")
+            .then(function (response) {
+                var r = response.data;
+                if (r!="") {
+                    var h = "";
+                    for (var i = 0, len = r.length; i < len; i++) {
+                        h+=`
+                        <tr>
+                            <td>${r[i].desc}</td>
+                            <td>${r[i].state_desc}</td>
+                            <td><div class="d-grid gap-2">
+                                <button
+                                    type="button"
+                                    name="btnEditarME"
+                                    id="btnEditarME"
+                                    class="btnEditarME btn btn-primary"
+                                    value="${r[i].id}/${r[i].desc}/${r[i].state}"
+                                >
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                            </div>
+                            </td>
+                        </tr>
+                        `;
+                    };
+                    document.getElementById("listEspecialidadesMedicas").innerHTML = h;
+                    var btnEditarME = document.getElementsByClassName("btnEditarME");
+
+                    for (var i = 0; i < btnEditarME.length; i++) {
+                        btnEditarME[i].addEventListener("click", function (e) {
+                            var id = e.target.value.split("/")[0];
+                            var desc = e.target.value.split("/")[1];
+                            var state = e.target.value.split("/")[2];
+                            alert(id);
+                        });
+                    }
+
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+        }
+        function getMedicalInstitutes() {
+                axios.get("{{ url_for('maint.get_medical_institutes' ) }}")
+                    .then(function (response) {
+                        var r = response.data;
+                        if (r != "") {
+                            var h = "";
+                            for (var i = 0, len = r.length; i < len; i++) {
+                                h += `
+                        <tr>
+                            <td>${r[i].itin}</td>
+                            <td>${r[i].trade_name}</td>
+                            <td>${r[i].bussiness_name}</td>
+                            <td>${r[i].state_desc}</td>
+                            <td><div class="d-grid gap-2">
+                                <button
+                                    type="button"
+                                    name="btnEditarIM"
+                                    id="btnEditarIM"
+                                    class="btnEditarIM btn btn-primary"
+                                    value="${r[i].id}/${r[i].itin}/${r[i].trade_name}/${r[i].bussiness_name}/${r[i].state}"
+                                >
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                            </div>
+                            </td>
+                        </tr>
+                        `;
+                            };
+                            document.getElementById("listInstitucionesMedicas").innerHTML = h;
+                            var btnEditarIM = document.getElementsByClassName("btnEditarIM");
+
+                            for (var i = 0; i < btnEditarIM.length; i++) {
+                                btnEditarIM[i].addEventListener("click", function (e) {
+                                    var id = e.target.value.split("/")[0];
+                                    var itin = e.target.value.split("/")[1];
+                                    var trade_name = e.target.value.split("/")[2];
+                                    var bussiness_name = e.target.value.split("/")[3];
+                                    var state = e.target.value.split("/")[4];
+                                    alert(id)
+                                });
+                            }
+
+                        }
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    })
+            }
+        getMedicalEspecialties();
+        getMedicalInstitutes();
+    </script>
+{% endblock %}

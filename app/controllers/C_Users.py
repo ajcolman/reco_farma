@@ -1,16 +1,16 @@
 from datetime import date
 from flask import Blueprint, json, render_template, request, session
-from flask_login import login_required
 from app.forms.F_People import F_Busqueda_Persona
-from app.forms.F_Users import F_Registro_Usuario
+from app.forms.F_Users import F_Cambio_Contrasena, F_Registro_Usuario
 from app.models.Models import People, Roles, Users, db
+from app.utils.utils import check_role
 
 
 class C_Users():
     usuarios = Blueprint('usuarios', __name__)
 
     @usuarios.route('/users')
-    @login_required
+    @check_role(['ADMINISTRADOR'])
     def users():
         formBusq = F_Busqueda_Persona()
         formUser = F_Registro_Usuario()
@@ -20,7 +20,7 @@ class C_Users():
         return render_template('v_users.html', title="Listado de Usuarios", formBusq=formBusq, formUser=formUser, roles=roles)
 
     @usuarios.route('/register_user_data', methods=['POST'])
-    @login_required
+    @check_role(['ADMINISTRADOR'])
     def register_user_data():
         message = {"correcto": '', "alerta": '', "error": ''}
         form = F_Registro_Usuario(request.form)
@@ -68,7 +68,7 @@ class C_Users():
         return json.dumps(message)
     
     @usuarios.route('/get_users_list', methods=['GET'])
-    @login_required
+    @check_role(['ADMINISTRADOR'])
     def get_users_list():
         message = {"correcto": '', "alerta": '', "error": ''}
         users = Users.query.with_entities(Users.user_id.label("id"), Users.user_name.label("username"), (People.peop_names + ' ' + People.peop_lastnames).label("person"), Users.user_peop_id.label("peop_id"), Users.user_state.label("state"), Roles.role_id.label("role_id"), Roles.role_desc.label("role")).join(People, People.peop_id == Users.user_peop_id, isouter=True).join(Roles, Roles.role_id == Users.user_role_id).paginate(
@@ -89,3 +89,27 @@ class C_Users():
             ] ,
             'total': users.total
         }
+    
+    @usuarios.route('/password_change')
+    def password_change():
+        form = F_Cambio_Contrasena()
+        return render_template('v_password_change.html', form=form, title="Cambio de Contraseña")
+
+    @usuarios.route('/change_password', methods=['POST'])
+    def change_password():
+        message = {"correcto": '', "alerta": '', "error": ''}
+        form = F_Cambio_Contrasena(request.form)
+        if form.validate_on_submit:
+            old_password = form.txtOldPassword.data
+            new_password = form.txtNewPassword.data
+            user = Users.query.filter_by(user_id=session['user_id']).first()
+            if user is not None:
+                if Users.check_password_hash(user.user_password, old_password):
+                    user.user_password = Users.hash_password(new_password)
+                    db.session.commit()
+                    message['correcto'] = '<strong>Se ha realizado correctamente el cambio de contraseña</strong>'
+                else:
+                    message['alerta'] = '<strong>La contraseña actual no es correcta</strong>'
+            else:
+                message['alerta'] = '<strong>El usuario no existe</strong>'
+        return json.dumps(message)

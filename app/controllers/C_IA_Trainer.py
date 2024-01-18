@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, render_template, json, jsonify
+from flask import Blueprint, Response, render_template, json, jsonify
 from flask import current_app as app
 import cv2
 import dlib
@@ -11,6 +11,8 @@ from sklearn import preprocessing
 from sklearn import svm
 from sklearn.model_selection import train_test_split
 import joblib
+
+from app.utils.utils import check_role
 
 ia = Blueprint('ia', __name__)
 
@@ -53,6 +55,7 @@ class CustomSVM:
 
 
 @ia.route('/identify', methods=['POST'])
+@check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
 def identify():
     message = {"correcto": '', "alerta": '', "error": ''}
     try:
@@ -118,6 +121,7 @@ def identify_person():
 
 
 @ia.route('/train', methods=['POST'])
+@check_role(['ADMINISTRADOR'])
 def train():
     message = {"correcto": '', "alerta": '', "error": ''}
     try:
@@ -156,6 +160,34 @@ def train_model():
 
 
 @ia.route('/ia_trainer')
+@check_role(['ADMINISTRADOR'])
 def ia_trainer():
     form = F_Trainer()
     return render_template('v_ia_trainer.html', title="Entrenamiento de Modelo de IA", form=form)
+
+
+""" cap = cv2.VideoCapture(0)
+
+def generate_frames():
+    while True:
+        # Capturar el cuadro de la webcam
+        success, frame = cap.read()
+        if not success:
+            break
+
+        # Codificar la imagen como JPEG
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+
+        # Entregar el cuadro como una secuencia de bytes
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+
+
+
+@ia.after_request
+def release_camera(response):
+    # Liberar recursos de la webcam después de enviar la respuesta
+    if response.status_code != 200:
+        cap.release()
+    return response """
