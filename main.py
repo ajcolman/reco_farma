@@ -1,5 +1,7 @@
-from app import create_app
-app = create_app()
+from app.__init__2 import create_app
+
+app, socketio = create_app()
+
 if __name__ == '__main__':
     # DEBUG is SET to TRUE. CHANGE FOR PROD
-    app.run(port=5000, debug=True)
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)

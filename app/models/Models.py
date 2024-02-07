@@ -36,6 +36,20 @@ class Users(db.Model):
     
     def get_id(self):
         return self.user_id
+    
+class Parcel_Type(db.Model):
+    __tablename__ = 'parcel_type'
+    paty_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    paty_desc = db.Column(db.String(100), unique=True, nullable=False)
+    paty_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
+    paty_user_created_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
+    paty_updated_at = db.Column(db.DateTime, onupdate=datetime.now(asuncion_timezone))
+    paty_user_updated_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    paty_state = db.Column(db.String(1), default="A", nullable=False)
+    paty_register = db.relationship(
+        'Users', backref='paty_register', foreign_keys=[paty_user_created_id])
+    paty_modifier = db.relationship(
+        'Users', backref='paty_modifier', foreign_keys=[paty_user_updated_id])
 
 class People(db.Model):
     __tablename__ = 'people'
@@ -137,9 +151,6 @@ class PeoplePrescription(db.Model):
     pepr_peop_id = db.Column(db.Integer, db.ForeignKey('people.peop_id'), nullable=False)
     pepr_doct_id = db.Column(db.Integer, db.ForeignKey('doctors.doct_id'), nullable=False)
     pepr_state = db.Column(db.String(1), default='A', nullable=False)
-    pepr_phar_id = db.Column(db.Integer, db.ForeignKey('pharmacist.phar_id'))
-    pepr_dispatched = db.Column(db.String(1), default='N')
-    pepr_date_dispatched = db.Column(db.DateTime)
     pepr_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
     pepr_user_created_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'), nullable=False)
@@ -158,6 +169,11 @@ class PeoplePrescriptionDetails(db.Model):
     prde_medicine = db.Column(db.String(100), nullable=False)
     prde_medical_indications = db.Column(db.String(4000), nullable=False)
     prde_state = db.Column(db.String(1), default='A', nullable=False)
+    prde_date_dispatched = db.Column(db.DateTime)
+    prde_user_dispatcher_id = db.Column(db.Integer, db.ForeignKey('users.user_id'))
+    prde_dispatched = db.Column(db.String(1))
+    prde_paty_id = db.Column(db.Integer, db.ForeignKey('parcel_type.paty_id'))
+    prde_quantity = db.Column(db.Integer)
     prde_created_at = db.Column(db.DateTime, default=datetime.now(asuncion_timezone))
     prde_user_created_id = db.Column(
         db.Integer, db.ForeignKey('users.user_id'), nullable=False)
@@ -168,6 +184,8 @@ class PeoplePrescriptionDetails(db.Model):
         'Users', backref='prde_register', foreign_keys=[prde_user_created_id])
     prde_modifier = db.relationship(
         'Users', backref='prde_modifier', foreign_keys=[prde_user_updated_id])
+    prde_dispatcher = db.relationship(
+        'Users', backref='prde_dispatcher', foreign_keys=[prde_user_dispatcher_id])
     
 class PeoplePhotos(db.Model):
     __tablename__ = 'people_photos'

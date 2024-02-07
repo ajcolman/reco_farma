@@ -2,10 +2,11 @@ from datetime import date, datetime
 import os
 import uuid
 from flask import Blueprint, current_app, json, render_template, request, session
+from sqlalchemy import func
 from app.forms.F_People import F_Busqueda_Persona, F_Fotos_Persona, F_Persona
-from app.models.Models import Doctors, People, PeoplePhotos, PeoplePrescription, db
+from app.models.Models import Doctors, People, PeoplePhotos, PeoplePrescription, PeoplePrescriptionDetails, db
 from app.utils.utils import check_role
-
+from sqlalchemy.orm import aliased
 
 class C_People():
     peop = Blueprint('people', __name__)
@@ -20,7 +21,7 @@ class C_People():
             names = form.txtNombBusqPersona.data
             lastnames = form.txtApellidosBusqPersona.data
             people = People.query.filter((People.peop_dni == dni) | (
-                People.peop_names == names.upper()) | (
+                People.peop_names.like('%'+names.upper()+'%')) | (
                 People.peop_lastnames == lastnames.upper())).all()
             people_data = [
                 {
@@ -201,7 +202,7 @@ class C_People():
         photo = PeoplePhotos.query.filter_by(peph_peop_id=person).order_by(PeoplePhotos.peph_id.desc()).first()
         consultation = PeoplePrescription.query.with_entities(PeoplePrescription.pepr_id.label('id'), (People.peop_names+' '+People.peop_lastnames).label('doctor'), PeoplePrescription.pepr_created_at.label('date')).join(Doctors, Doctors.doct_id == PeoplePrescription.pepr_doct_id).join(People, People.peop_id == Doctors.doct_peop_id).filter(PeoplePrescription.pepr_peop_id == person).order_by(PeoplePrescription.pepr_id.desc()).paginate(
             page=1, per_page=10)
-        message['photo'] = photo.peph_path
+        message['photo'] = photo.peph_path if photo is not None else None
         message['consultation'] = [
             {
                 "id": prescription.id,
@@ -210,6 +211,51 @@ class C_People():
                 } for prescription in consultation
             ]
         return json.dumps(message)
+    
+    @peop.route('/get_person_prescription/<people>')
+    def get_person_prescription(people):
+        message = {"correcto": '', "alerta": '', "error": ''}
+        patient_alias = aliased(People, name='patient_alias')
+        doctor_alias = aliased(People, name='doctor_alias')
+        consultation = db.session.query(
+            PeoplePrescription.pepr_id.label('consultation'),
+            patient_alias.peop_id.label('patient_id'),
+            PeoplePrescription.pepr_dx.label('diagnostic'),
+            func.concat(patient_alias.peop_names, ' ', patient_alias.peop_lastnames).label('patient'),
+            patient_alias.peop_dni.label('dni'),
+            patient_alias.peop_gender.label('gender'),
+            patient_alias.peop_birthdate.label('birthdate'),
+            doctor_alias.peop_id.label('doctor_id'),
+            PeoplePrescription.pepr_dx.label('diagnostic'),
+            func.concat(doctor_alias.peop_names, ' ', doctor_alias.peop_lastnames).label('doctor'),
+            PeoplePrescription.pepr_created_at.label('created_at')
+        ).join(patient_alias, PeoplePrescription.pepr_peop_id == patient_alias.peop_id).join(doctor_alias, PeoplePrescription.pepr_doct_id == doctor_alias.peop_id).filter(patient_alias.peop_dni == people).order_by(PeoplePrescription.pepr_id.desc()).first()
+        photo = None
+        medications = None
+        patient = None
+        medicine = None
+        if consultation is not None:
+            photo = PeoplePhotos.query.filter(PeoplePhotos.peph_peop_id==consultation.patient_id).order_by(PeoplePhotos.peph_id.desc()).first()
+            medications = PeoplePrescriptionDetails.query.filter(PeoplePrescriptionDetails.prde_pepr_id == consultation.consultation, PeoplePrescriptionDetails.prde_dispatched == None).all()
+            patient = [
+                {
+                        "patient": consultation.patient,
+                        "patient_dni": consultation.dni,
+                        "last_consultation": consultation.created_at.strftime("%d/%m/%Y"),
+                        "doctor": consultation.doctor,
+                    }
+            ]
+            medicine = [{
+                        "medicina": med.prde_medicine,
+                        "id": med.prde_id
+                    } for med in medications]
+        return [
+            {
+                "patient": patient if patient is not None else None,
+                "medication": medicine,
+                "photo": photo.peph_path if photo is not None else '27002.jpg'
+            }
+        ]
 
     def calcular_edad(fecha_nacimiento):
     # Obtiene la fecha de hoy

@@ -245,25 +245,27 @@
                         h += '</tr>';
                     };
                     document.getElementById('listPersonas').innerHTML = h;
-                    var btnSelectPers = document.querySelector(".btnSelectPers");
-                    btnSelectPers.addEventListener('click', (e) => {
-                        var value = btnSelectPers.value.split('@');
-                        var id = value[0];
-                        var dni = value[1];
-                        var person = value[2];
-                        var gender = value[3];
-                        var age = value[4];
-                        var birthdate = value[5];
-                        document.getElementById("txtPersona").value = person;
-                        document.getElementById("txtPersonaCod").value = id;
-                        document.getElementById("person-name").innerHTML = person;
-                        document.getElementById("person-dni").innerHTML = dni;
-                        document.getElementById("person-gender").innerHTML = gender;
-                        document.getElementById("person-age").innerHTML = age;
-                        document.getElementById("person-birthdate").innerHTML = birthdate;
-                        getPersonPhoto(id);
-                        document.getElementById("person-data").removeAttribute("hidden");
-                        document.getElementById("divbtnHistorial").removeAttribute("hidden");
+                    var btnSelectPers = document.querySelectorAll(".btnSelectPers");
+                    btnSelectPers.forEach(function (button) {
+                        button.addEventListener('click', (e) => {
+                            var value = button.value.split('@');
+                            var id = value[0];
+                            var dni = value[1];
+                            var person = value[2];
+                            var gender = value[3];
+                            var age = value[4];
+                            var birthdate = value[5];
+                            document.getElementById("txtPersona").value = person;
+                            document.getElementById("txtPersonaCod").value = id;
+                            document.getElementById("person-name").innerHTML = person;
+                            document.getElementById("person-dni").innerHTML = dni;
+                            document.getElementById("person-gender").innerHTML = gender;
+                            document.getElementById("person-age").innerHTML = age;
+                            document.getElementById("person-birthdate").innerHTML = birthdate;
+                            getPersonPhoto(id);
+                            document.getElementById("person-data").removeAttribute("hidden");
+                            document.getElementById("divbtnHistorial").removeAttribute("hidden");
+                        });
                     });
                 }
             })
@@ -304,14 +306,18 @@
                 var r = response.data;
                 if (r['photo'] != "") {
                     var photo = r['photo'];
-                    document.getElementById("person-last-photo").innerHTML = '<img src="{{ url_for("static", filename="uploads/people_photo/") }}/' + photo + '" class="img-fluid img-thumbnail rounded" alt="Last Photo" style="height: 200px" />';
+                    if (photo) {
+                        document.getElementById("person-last-photo").innerHTML = '<img src="{{ url_for("static", filename="uploads/people_photo/") }}/' + photo + '" class="img-fluid img-thumbnail rounded" alt="Last Photo" style="height: 200px" />';
+                    } else {
+                        document.getElementById("person-last-photo").innerHTML = '<img src="{{ url_for("static", filename="img/27002.jpg") }}" class="img-fluid img-thumbnail rounded" alt="Last Photo" style="height: 200px" />';
+                    }
                 }
                 if (r['consultation'] != "") {
                     var c = r['consultation'];
                     var z = "";
                     for (var i = 0, len = c.length; i < len; i++) {
                         z += '<tr>';
-                        z += '<td><a name="" id="" class="btn btn-primary" href="{{ url_for("doctors.consultation_details", consultation="" ) }}/'+c[i].id+'" role="button" >Ver Detalles</a></td>';
+                        z += '<td><a name="" id="" class="btn btn-primary" href="{{ url_for("doctors.consultation_details", consultation="" ) }}/' + c[i].id + '" role="button" >Ver Detalles</a></td>';
                         z += '<td>' + c[i].date + '</td>';
                         z += '<td>' + c[i].doctor + '</td>';
                         z += '</tr>';
@@ -353,10 +359,38 @@
         axios.post("{{ url_for('doctors.registers_data_consultation' ) }}", formData)
             .then(function (response) {
                 var r = response.data;
+                if (r['correcto'] != "") {
+                    $.confirm({
+                        title: 'Correcto',
+                        content: r['correcto'],
+                        type: 'green',
+                        buttons: {
+                            aceptar: {
+                                text: 'Aceptar',
+                                btnClass: 'btn btn-success',
+                                action: function () {
+                                    print_proof_consulting(r['consulting'])
+                                }
+                            }
+                        }
+                    });
+                }
+                if (r['alerta'] != "") {
+                    generarMensajeAlerta(r);
+                }
+                if (r['error'] != "") {
+                    generarMensajeError(r);
+                }
             })
             .catch(function (error) {
                 console.log(error);
             })
     });
+
+    function print_proof_consulting(consulting) {
+        var url = "{{ url_for('report.print_proof_consulting' ) }}?consulta=" + encodeURIComponent(consulting);
+
+        window.open(url, '_blank');
+    }
 </script>
 {% endblock %}

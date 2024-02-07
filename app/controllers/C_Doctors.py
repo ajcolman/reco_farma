@@ -117,7 +117,7 @@ class C_Doctors():
                     pepr_id = existConsult.pepr_id
                     existConsult = PeoplePrescription()
                     existConsult.pepr_peop_id = person
-                    existConsult.pepr_dx = diagnostic
+                    existConsult.pepr_dx = diagnostic.upper()
                     existConsult.pepr_doct_id = session['user_id']
                     existConsult.pepr_state = 'A'
                     existConsult.pepr_user_updated_id = session['user_id']
@@ -125,7 +125,7 @@ class C_Doctors():
                 else:
                     consultation = PeoplePrescription()
                     consultation.pepr_peop_id = person
-                    consultation.pepr_dx = diagnostic
+                    consultation.pepr_dx = diagnostic.upper()
                     consultation.pepr_doct_id = session['user_id']
                     consultation.pepr_state = 'A'
                     consultation.pepr_user_created_id = session['user_id']
@@ -138,22 +138,24 @@ class C_Doctors():
                     if existMedication is not None:
                         existMedication = PeoplePrescriptionDetails()
                         existMedication.prde_pepr_id = pepr_id
-                        existMedication.prde_medical_indications = e['txtIndicacionesMedicas']
-                        existMedication.prde_medicine = e['txtMedicina']
+                        existMedication.prde_medical_indications = e['txtIndicacionesMedicas'].upper()
+                        existMedication.prde_medicine = e['txtMedicina'].upper()
                         existMedication.prde_state = 'A'
                         existMedication.prde_user_updated_id = session['user_id']
                         db.session.commit()
                         message['correcto'] = "Se ha registrado modificado los datos de la consulta"
+                        message['consulting'] = pepr_id
                     else:
                         medication = PeoplePrescriptionDetails()
                         medication.prde_pepr_id = pepr_id
-                        medication.prde_medical_indications = e['txtIndicacionesMedicas']
-                        medication.prde_medicine = e['txtMedicina']
+                        medication.prde_medical_indications = e['txtIndicacionesMedicas'].upper()
+                        medication.prde_medicine = e['txtMedicina'].upper()
                         medication.prde_state = 'A'
                         medication.prde_user_created_id = session['user_id']
                         db.session.add(medication)
                         db.session.commit()
                         message['correcto'] = "Se ha registrado modificado los datos de la consulta"
+                        message['consulting'] = pepr_id
             except Exception as e:
                 db.session.rollback()
                 raise e
@@ -197,7 +199,6 @@ class C_Doctors():
         patient_alias = aliased(People, name='patient_alias')
         doctor_alias = aliased(People, name='doctor_alias')
 
-        # Consulta corregida
         consultation = db.session.query(
             PeoplePrescription.pepr_id.label('consultation'),
             patient_alias.peop_id.label('patient_id'),

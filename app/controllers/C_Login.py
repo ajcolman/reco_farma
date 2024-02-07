@@ -29,6 +29,7 @@ class C_Login():
                     session['habilitation'] = user_data.user_state
                     session['person'] = person_people.peop_names + ' ' + person_people.peop_lastnames
                     session['rol'] = user_data.rol
+                    session['person_cod'] = user_data.user_peop_id  
                     message['correcto'] = "Se ha comprobado las credenciales"
                 else:
                     message['error'] = "Usuario o contraseña incorrectas"

@@ -155,7 +155,7 @@
                         <th scope="col">Usuario</th>
                         <th scope="col">Responsable</th>
                         <th scope="col">Rol</th>
-                        <th scope="col">Estado</th> 
+                        <th scope="col">Estado</th>
                     </tr>
                 </thead>
                 <tbody id="listUsers">
@@ -195,15 +195,18 @@
                         h += '</tr>';
                     };
                     document.getElementById('listPersonas').innerHTML = h;
-                    var btnSelectPers = document.querySelector(".btnSelectPers");
-                    btnSelectPers.addEventListener('click', (e) => {
-                        var value = btnSelectPers.value.split('/');
-                        var id = value[0];
-                        var dni = value[1];
-                        var person = value[2];
-                        document.getElementById("txtPersona").value = person;
-                        document.getElementById("txtPersonaCod").value = id;
+                    var btnSelectPers = document.querySelectorAll(".btnSelectPers");
+                    btnSelectPers.forEach(function (button) {
+                        button.addEventListener('click', (e) => {
+                            var value = button.value.split('/');
+                            var id = value[0];
+                            var dni = value[1];
+                            var person = value[2];
+                            document.getElementById("txtPersona").value = person;
+                            document.getElementById("txtPersonaCod").value = id;
+                        });
                     });
+
                 }
             })
             .catch(function (error) {
@@ -263,16 +266,19 @@
                 </tr>
                 `;
                 document.querySelector('#listUsers').innerHTML = h;
-                
+
             }
-            const btnEditar = document.querySelector(".btnEditar");
-            btnEditar.addEventListener('click', (e) => {
-                var value = btnEditar.value.split('/');
-                document.getElementById("txtPersona").value = value[1];
-                document.getElementById("txtPersonaCod").value = value[2];
-                document.getElementById("sltRol").value = value[4];
-                document.getElementById("sltEstado").value = value[3];
+            const btnEditarList = document.querySelectorAll(".btnEditar");
+            btnEditarList.forEach(function (button) {
+                button.addEventListener('click', (e) => {
+                    var value = button.value.split('/');
+                    document.getElementById("txtPersona").value = value[1];
+                    document.getElementById("txtPersonaCod").value = value[2];
+                    document.getElementById("sltRol").value = value[4];
+                    document.getElementById("sltEstado").value = value[3];
+                });
             });
+
         }
     };
 
