@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime
 from flask import flash, redirect, session, url_for
 import pytz
@@ -5,6 +6,11 @@ from functools import wraps
 # Configurar la zona horaria para Asunción, Paraguay
 asuncion_timezone = pytz.timezone('America/Asuncion')
 
+
+def image_to_base64(image_path):
+    with open(image_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode("utf-8")
+    return encoded_string
 
 def check_role(required_roles):
     def decorator(func):

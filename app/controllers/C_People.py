@@ -221,13 +221,15 @@ class C_People():
             PeoplePrescription.pepr_id.label('consultation'),
             patient_alias.peop_id.label('patient_id'),
             PeoplePrescription.pepr_dx.label('diagnostic'),
-            func.concat(patient_alias.peop_names, ' ', patient_alias.peop_lastnames).label('patient'),
+            (patient_alias.peop_names + ' ' +
+             patient_alias.peop_lastnames).label('patient'),
             patient_alias.peop_dni.label('dni'),
             patient_alias.peop_gender.label('gender'),
             patient_alias.peop_birthdate.label('birthdate'),
             doctor_alias.peop_id.label('doctor_id'),
             PeoplePrescription.pepr_dx.label('diagnostic'),
-            func.concat(doctor_alias.peop_names, ' ', doctor_alias.peop_lastnames).label('doctor'),
+            (doctor_alias.peop_names + ' ' +
+             doctor_alias.peop_lastnames).label('doctor'),
             PeoplePrescription.pepr_created_at.label('created_at')
         ).join(patient_alias, PeoplePrescription.pepr_peop_id == patient_alias.peop_id).join(doctor_alias, PeoplePrescription.pepr_doct_id == doctor_alias.peop_id).filter(patient_alias.peop_dni == people).order_by(PeoplePrescription.pepr_id.desc()).first()
         photo = None

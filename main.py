@@ -1,4 +1,4 @@
-from app.__init__2 import create_app
+from app import create_app
 
 app, socketio = create_app()
 
