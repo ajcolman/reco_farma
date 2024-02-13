@@ -22,9 +22,9 @@ def check_role(required_roles):
                 return redirect(url_for('login.index'))
 
             # Verificar si el rol del usuario está en la lista de roles requeridos
-            """ if session['rol'] not in required_roles:
+            if session['rol'] not in required_roles:
                 flash('No tienes los privilegios suficientes para acceder a este módulo.', 'danger')
-                return redirect(url_for('login.principal')) """
+                return redirect(url_for('login.principal'))
             
             if session['habilitation'] != 'A':
                 flash('Su usuario se encuentra bloqueado.', 'danger')

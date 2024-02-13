@@ -4,18 +4,21 @@ from app.forms.F_People import F_Busqueda_Persona
 
 from app.forms.F_Pharma import F_Deliver_Medications
 from app.models.Models import db, PeoplePrescriptionDetails
+from app.utils.utils import check_role
 
 
 class C_Pharma():
     pharma = Blueprint('pharma', __name__)
     
     @pharma.route('/medical_prescriptions')
+    @check_role(['FARMACEUTICO'])
     def medical_prescriptions():
         form = F_Deliver_Medications()
         formBusq = F_Busqueda_Persona()
         return render_template('v_medical_prescriptions.html', title="Ver Prescripciones Médicas", form=form, formBusq=formBusq)
     
     @pharma.route('/deliver_medication', methods=['POST'])
+    @check_role(['FARMACEUTICO'])
     def deliver_medication():
         message = {"correcto": '', "alerta": '', "error": '', 'delivered': []}
         deliver = request.form.getlist("txtMedicina")

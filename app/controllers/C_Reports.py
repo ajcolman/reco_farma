@@ -6,7 +6,7 @@ from io import BytesIO
 from flask_qrcode import QRcode
 from sqlalchemy import func
 from app.models.Models import Doctors, MedicalEspecialties, People, PeoplePrescription, Roles, Users, db, PeoplePrescriptionDetails
-from app.utils.utils import image_to_base64
+from app.utils.utils import check_role, image_to_base64
 
 
 class C_Reports():
@@ -14,6 +14,7 @@ class C_Reports():
     report = Blueprint('report', __name__)
 
     @report.route('/print_proof_delivery')
+    @check_role(['FARMACEUTICO'])
     def print_proof_delivery():
         datos = ""
         # Obtener el parámetro de la URL
@@ -93,7 +94,7 @@ class C_Reports():
             img.save(img_buffer, format='PNG')
             img_buffer.seek(0) """
         # Ruta relativa de la imagen
-        image_path = os.path.join("app", "static", "img", "fondo2.png")
+        image_path = os.path.join("app", "static", "img", "fondo_t.png")
 
         # Convertir la imagen en base64
         image64 = image_to_base64(image_path)
@@ -114,10 +115,12 @@ class C_Reports():
         return response
 
     @report.route('/statistics')
+    @check_role(['ADMINISTRADOR'])
     def statistics():
         return render_template('v_statistics.html', title="Módulo Estadístico")
 
     @report.route('/doctor_quantity')
+    @check_role(['ADMINISTRADOR'])
     def doctor_quantity():
         doctor_active = Doctors.query.with_entities(func.count(Doctors.doct_id).label(
             'quantity')).filter(Doctors.doct_state == 'A').first()
@@ -126,6 +129,7 @@ class C_Reports():
         return json.dumps({'quantity_active': doctor_active.quantity, 'quantity_inactive': doctor_inactive.quantity})
 
     @report.route('/doctor_quantity_especialties')
+    @check_role(['ADMINISTRADOR'])
     def doctor_quantity_especialties():
         list_especialties = MedicalEspecialties.query.filter(
             MedicalEspecialties.mees_state == 'A').order_by(MedicalEspecialties.mees_desc).all()
@@ -150,6 +154,7 @@ class C_Reports():
         ])
 
     @report.route('/user_quantity')
+    @check_role(['ADMINISTRADOR'])
     def user_quantity():
         user_active = Users.query.with_entities(func.count(Users.user_id).label(
             'quantity')).filter(Users.user_state == 'A').first()
@@ -158,6 +163,7 @@ class C_Reports():
         return json.dumps({'quantity_active': user_active.quantity, 'quantity_inactive': user_inactive.quantity})
 
     @report.route('/user_quantity_role')
+    @check_role(['ADMINISTRADOR'])
     def user_quantity_role():
         list_roles = Roles.query.all()
         list_users = Users.query.with_entities(Roles.role_desc.label('role'), func.count(Users.user_id).label('quantity')).join(
@@ -181,6 +187,7 @@ class C_Reports():
         ])
 
     @report.route('/people_quantity_gender')
+    @check_role(['ADMINISTRADOR'])
     def people_quantity_gender():
         list_genders = People.query.with_entities(People.peop_gender.label('gender'), func.count(
             People.peop_id).label('quantity')).group_by(People.peop_gender).order_by(People.peop_gender).all()

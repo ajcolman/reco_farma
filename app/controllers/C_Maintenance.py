@@ -44,7 +44,7 @@ class C_Maintenance():
     
     @maint.route('/get_parcel_types/<total>')    
     @maint.route('/get_parcel_types')
-    @check_role(['ADMINISTRADOR'])
+    @check_role(['ADMINISTRADOR', 'FARMACEUTICO'])
     def get_parcel_types(total=False):
         if total!=False:
             parcel_types = Parcel_Type.query.order_by(Parcel_Type.paty_desc).all()

@@ -133,7 +133,8 @@ class C_Doctors():
                     db.session.commit()
                     pepr_id = consultation.pepr_id
                 for e in form.dynamic_fields.data:
-                    existMedication = PeoplePrescriptionDetails.query.filter(PeoplePrescriptionDetails.prde_pepr_id == pepr_id, PeoplePrescriptionDetails.prde_medical_indications == e['txtIndicacionesMedicas'], PeoplePrescriptionDetails.prde_medicine == e['txtMedicina']).first()
+                    existMedication = PeoplePrescriptionDetails.query.filter(PeoplePrescriptionDetails.prde_pepr_id == pepr_id, PeoplePrescriptionDetails.prde_medical_indications == e['txtIndicacionesMedicas'].upper(
+                    ), PeoplePrescriptionDetails.prde_medicine == e['txtMedicina'].upper()).first()
 
                     if existMedication is not None:
                         existMedication = PeoplePrescriptionDetails()
@@ -203,13 +204,13 @@ class C_Doctors():
             PeoplePrescription.pepr_id.label('consultation'),
             patient_alias.peop_id.label('patient_id'),
             PeoplePrescription.pepr_dx.label('diagnostic'),
-            func.concat(patient_alias.peop_names, ' ', patient_alias.peop_lastnames).label('patient'),
+            (patient_alias.peop_names+ ' ' + patient_alias.peop_lastnames).label('patient'),
             patient_alias.peop_dni.label('dni'),
             patient_alias.peop_gender.label('gender'),
             patient_alias.peop_birthdate.label('birthdate'),
             doctor_alias.peop_id.label('doctor_id'),
             PeoplePrescription.pepr_dx.label('diagnostic'),
-            func.concat(doctor_alias.peop_names, ' ', doctor_alias.peop_lastnames).label('doctor')
+            (doctor_alias.peop_names+ ' ' + doctor_alias.peop_lastnames).label('doctor')
         ).join(patient_alias, PeoplePrescription.pepr_peop_id == patient_alias.peop_id).join(doctor_alias, PeoplePrescription.pepr_doct_id == doctor_alias.peop_id).filter(PeoplePrescription.pepr_id==consultation).first()
         photo = PeoplePhotos.query.filter(PeoplePhotos.peph_peop_id==consultation.patient_id).order_by(PeoplePhotos.peph_id.desc()).first()
         medications = PeoplePrescriptionDetails.query.filter(PeoplePrescriptionDetails.prde_pepr_id==consultation.consultation).all()

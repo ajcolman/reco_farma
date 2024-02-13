@@ -20,9 +20,12 @@ class C_People():
             dni = form.txtCedulaBusqPersona.data
             names = form.txtNombBusqPersona.data
             lastnames = form.txtApellidosBusqPersona.data
-            people = People.query.filter((People.peop_dni == dni) | (
-                People.peop_names.like('%'+names.upper()+'%')) | (
-                People.peop_lastnames == lastnames.upper())).all()
+            if dni:
+                people = People.query.filter(People.peop_dni == dni).all()
+            else:
+                people = People.query.filter((People.peop_names + ' ' + People.peop_lastnames).like(
+                    '%'+names.upper()+' '+lastnames.upper()+'%')).all()
+
             people_data = [
                 {
                     "id": person.peop_id,
