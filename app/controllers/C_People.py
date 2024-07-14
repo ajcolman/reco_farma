@@ -1,7 +1,7 @@
 from datetime import date, datetime
 import os
 import uuid
-from flask import Blueprint, current_app, json, render_template, request, session
+from flask import Blueprint, current_app, json, jsonify, render_template, request, session
 from sqlalchemy import func
 from app.forms.F_People import F_Busqueda_Persona, F_Fotos_Persona, F_Persona
 from app.models.Models import Doctors, People, PeoplePhotos, PeoplePrescription, PeoplePrescriptionDetails, db
@@ -152,9 +152,12 @@ class C_People():
     @check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
     def take_photo(dni):
         form = F_Fotos_Persona()
-        person_data = People.query.with_entities(People.peop_dni.label('dni'), People.peop_names.label(
+        person_data = People.query.with_entities(People.peop_id.label('peop_id'), People.peop_dni.label('dni'), People.peop_names.label(
             'names'), People.peop_lastnames.label('lastnames'), People.peop_birthdate.label('age'), People.peop_gender.label("gender")).filter_by(peop_dni=dni).first()
-        return render_template('v_take_photo.html', title='Tomar Foto Persona', person_data=person_data, form=form, dni=dni)
+        print(dni)
+        peph = PeoplePhotos.query.filter(PeoplePhotos.peph_peop_id == person_data.peop_id).all()
+        print(peph)
+        return render_template('v_take_photo.html', title='Tomar Foto Persona', person_data=person_data, form=form, dni=dni, photos=peph)
 
     @peop.route('/register_person_photo/<dni>', methods=['POST'])
     @check_role(['ADMINISTRADOR', 'MEDICO', 'FARMACEUTICO'])
@@ -261,7 +264,43 @@ class C_People():
                 "photo": photo.peph_path if photo is not None else '27002.jpg'
             }
         ]
+    
+    @peop.route('/delete_people/<people>', methods=['DELETE'])
+    def delete_people(people):
+        message = {"correcto": '', "alerta": '', "error": ''}
+        person = People.query.filter(People.peop_dni == people).first()
+        if person:
+            db.session.delete(person)
+            db.session.commit()
+            message['correcto'] = 'Se ha eliminado correctamente a la persona'
+        else:
+            message['error'] = 'Persona no encontrada'
+        return json.dumps(message)
+    
+    @peop.route('/delete_people_photo/<photo>', methods=['DELETE'])
+    def delete_people_photo(photo):
+        message = {"correcto": '', "alerta": '', "error": ''}
+        photo = PeoplePhotos.query.filter(
+            PeoplePhotos.peph_id == photo).first()
+        if photo:
+            db.session.delete(photo)
+            db.session.commit()
+            message['correcto'] = 'Se ha eliminado correctamente a la foto de la persona en la BD'
+            file_path = f"app/static/uploads/people_photo/{photo.peph_path}"
+            if not file_path:
+                message['error'] = 'No se ha proporcionado la ruta del archivo'
+                return jsonify(message), 400
 
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                    message['correcto'] += 'El archivo se ha eliminado correctamente del disco'
+                except Exception as e:
+                    message['error'] = f'Error al eliminar el archivo: {str(e)}'
+        else:
+            message['error'] = 'Foto no encontrada'
+        return json.dumps(message)
+    
     def calcular_edad(fecha_nacimiento):
     # Obtiene la fecha de hoy
         fecha_hoy = date.today()

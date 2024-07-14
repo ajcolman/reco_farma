@@ -113,3 +113,15 @@ class C_Users():
             else:
                 message['alerta'] = '<strong>El usuario no existe</strong>'
         return json.dumps(message)
+    
+    @usuarios.route('/delete_user/<user>', methods=['DELETE'])
+    def delete_user(user):
+        message = {"correcto": '', "alerta": '', "error": ''}
+        user = Users.query.filter(Users.user_id == user).first()
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            message['correcto'] = 'Se ha eliminado correctamente al Usuario'
+        else:
+            message['error'] = 'Usuario no encontrado'
+        return json.dumps(message)

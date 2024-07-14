@@ -246,7 +246,10 @@
                 h += `
                 <tr>
                 <td>
-                <div class="d-grid gap-2">
+                
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
                     <button
                     type="button"
                     name="btnEditar"
@@ -258,6 +261,20 @@
                     Editar
                     </button>
                 </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
+                            <button
+                            type="button"
+                            name="btnEliminar"
+                            class="btnEliminar btn btn-danger"
+                            value="${user.id}"
+                            >
+                            Eliminar
+                            </button>
+                        </div>  
+                    </div>
+                    </div>
                 </td>
                 <td>${user.username}</td>
                 <td>${user.person}</td>
@@ -266,6 +283,46 @@
                 </tr>
                 `;
                 document.querySelector('#listUsers').innerHTML = h;
+                $(".btnEliminar").click(function (event) {
+                    event.preventDefault();
+                    var dni = $(this).val();
+                    $.confirm({
+                        title: 'Atención',
+                        content: "Está seguro que desea eliminar a esté usuario?",
+                        type: 'red',
+                        buttons: {
+                            aceptar: {
+                                text: 'Sí, eliminar',
+                                btnClass: 'btn btn-danger',
+                                action: function () {
+                                    const deleteUrl = "{{ url_for('usuarios.delete_user', user='') }}";
+
+                                    axios.delete(deleteUrl + dni, {
+                                        headers: {
+                                            'X-CSRFToken': csrfToken
+                                        }
+                                    })
+                                        .then(function (response) {
+                                            const mensajes = response.data;
+                                            if (mensajes.correcto) {
+                                                generarMensajeCorrecto(mensajes, getUsers);
+                                            }
+                                            if (mensajes.error) {
+                                                generarMensajeError(mensajes);
+                                            }
+                                        })
+                                        .catch(function (error) {
+                                            console.error('Hubo un error!', error);
+                                            alert('Error al eliminar la persona');
+                                        });
+                                }
+                            },
+                            cancelar: {
+
+                            }
+                        }
+                    });
+                });
 
             }
             const btnEditarList = document.querySelectorAll(".btnEditar");

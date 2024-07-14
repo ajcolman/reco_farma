@@ -55,6 +55,37 @@
 
     </div>
 </form>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">Galería de fotos</h5>
+            <h6 class="card-subtitle mb-2 text-muted ">Aquí podrá visualizar las fotos hechas a la persona</h6>
+            <div class="row">
+                {% if photos %}
+                  {% for p in photos %}
+                    <div class="col-md-4 mb-3">
+                        <img class="img-thumbnail" src="{{ url_for('static', filename='uploads/people_photo/') }}{{p.peph_path}}" alt="">
+                        <div class="d-grid gap-2">
+                            <button
+                                type="button"
+                                name="btnEliminar"
+                                id="btnEliminar"
+                                class="btnEliminar btn btn-danger"
+                                value="{{ p.peph_id }}"
+                            >
+                                Eliminar
+                            </button>
+                        </div>
+                        
+                    </div>
+                  {% endfor %}
+                {% endif %}    
+            </div>
+          </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 {% block scripts %}
 <script>
@@ -113,7 +144,7 @@
             .then(function (response) {
                 var mensajes = response.data;
                 if (mensajes['correcto'] != '') {
-                    generarMensajeCorrecto(mensajes);
+                    generarMensajeCorrecto(mensajes, reloadWindow);
                 }
                 if (mensajes['error'] != '') {
                     generarMensajeError(mensajes);
@@ -133,5 +164,49 @@
             }
             return new Blob([ab], { type: 'image/jpeg' });
         }
+    function reloadWindow(){
+        window.location.reload()
+    }
+
+    $(".btnEliminar").click(function (event) {
+            event.preventDefault();
+            var dni = $(this).val();
+            $.confirm({
+                title: 'Atención',
+                content: "Está seguro que desea eliminar a está foto de la persona?",
+                type: 'red',
+                buttons: {
+                    aceptar: {
+                        text: 'Sí, eliminar',
+                        btnClass: 'btn btn-danger',
+                        action: function () {
+                            const deleteUrl = "{{ url_for('people.delete_people_photo', photo='') }}";
+
+                            axios.delete(deleteUrl + dni, {
+                                headers: {
+                                    'X-CSRFToken': csrfToken
+                                }
+                            })
+                                .then(function (response) {
+                                    const mensajes = response.data;
+                                    if (mensajes.correcto) {
+                                        generarMensajeCorrecto(mensajes, reloadWindow);
+                                    }
+                                    if (mensajes.error) {
+                                        generarMensajeError(mensajes);
+                                    }
+                                })
+                                .catch(function (error) {
+                                    console.error('Hubo un error!', error);
+                                    alert('Error al eliminar la persona');
+                                });
+                        }
+                    },
+                    cancelar: {
+
+                    }
+                }
+            });
+        });
 </script>
 {% endblock %}
